@@ -2,6 +2,7 @@
 
 AssimpTool::AssimpTool()
 {
+	m_vertexCount = 0;
 }
 
 AssimpTool::~AssimpTool(void)
@@ -10,23 +11,13 @@ AssimpTool::~AssimpTool(void)
 
 bool AssimpTool::loadModel(std::string file)
 {
-	modelScene = importer.ReadFile(file, aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_PreTransformVertices |
-		aiProcess_CalcTangentSpace |
-		aiProcess_GenSmoothNormals |
-		aiProcess_Triangulate |
-		aiProcess_FixInfacingNormals |
-		aiProcess_FindInvalidData |
-		aiProcess_ValidateDataStructure | 0
 
-	);
+	const char * c = file.c_str();
+	//modelScene = importer.ReadFile(file, aiProcess_MakeLeftHanded);
+	//modelScene = importer.ReadFile(file, aiProcess_ConvertToLeftHanded);
+	
 
-	if (!modelScene)
-	{
-		MessageBoxA(NULL, importer.GetErrorString(), "Error: ", MB_ICONERROR);
-		return false;
-	}
-	else
-		//processData();
+	modelScene = aiImportFile(c, aiProcess_MakeLeftHanded);
 
 	return true;
 }
@@ -47,6 +38,7 @@ bool AssimpTool::InitializeBuffers(ID3D11Device* device)
 	//for (unsigned int a = 0; a < nodeBuff.size(); a++)
 	//{
 	//	modelNode = nodeBuff.at(a);
+	//}
 
 	//	if (modelNode->mNumMeshes > 0)
 	//		for (unsigned int b = 0; b < modelNode->mNumMeshes; b++) {
@@ -59,87 +51,141 @@ bool AssimpTool::InitializeBuffers(ID3D11Device* device)
 	}
 	if (modelScene->mNumMeshes > 0)
 	{
-
+		int faceCount = 0;
 		for (unsigned int m = 0; m < modelScene->mNumMeshes; m++)
 		{
-			mesh = modelScene->mMeshes[m];
-
-			m_vertexCount = mesh->mNumVertices;
-			m_indexCount = mesh->mFaces->mNumIndices;
-			m_indexCount = m_vertexCount;
-			// Create the vertex array.
-			vertices = new VertexType[m_vertexCount];
-			if (!vertices)
-			{
-				return false;
-			}
-
-			// Create the index array.
-			indices = new unsigned long[m_vertexCount];
-			if (!indices)
-			{
-				return false;
-			}
-
-			// Load the vertex array and index array with data.
-			for (int i = 0; i < m_vertexCount; i++)
-			{
-				vertices[i].position = D3DXVECTOR3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-				vertices[i].texture = D3DXVECTOR2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-				vertices[i].normal = D3DXVECTOR3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);			
-			}
+			m_vertexCount += modelScene->mMeshes[m]->mNumVertices;
+			faceCount += modelScene->mMeshes[m]->mNumFaces;
 		}
+
+		m_indexCount = m_vertexCount;
+
+		//for (unsigned int m = 0; m < modelScene->mNumMeshes; m++)
+		//{
+
+
+		//m_vertexCount = mesh->mNumVertices;
+		//m_indexCount = mesh->mFaces->mNumIndices;
+
+		// Create the vertex array.
+		vertices = new VertexType[m_vertexCount];
+		if (!vertices)
+		{
+			return false;
+		}
+
+		// Create the index array.
+		indices = new unsigned long[m_indexCount ];
+		if (!indices)
+		{
+			return false;
+		}
+
+		int vertice = 0;
+		int mesh_count = 0;
+		int m_previous_num_vertices = 0;
+
+		mesh = modelScene->mMeshes[0];
+		// Load the vertex array and index array with data.
+		for (int i = 0; i < m_vertexCount; i++)
+		{
+
+			if (modelScene->mMeshes[mesh_count]->mNumVertices + m_previous_num_vertices < i && mesh_count < modelScene->mNumMeshes - 1)
+			{
+				mesh_count++;
+				m_previous_num_vertices += mesh->mNumVertices;
+				vertice = 0;
+				mesh = modelScene->mMeshes[mesh_count];
+			}
+					
+			vertices[i].position = D3DXVECTOR3(mesh->mVertices[vertice].x, mesh->mVertices[vertice].y, mesh->mVertices[vertice].z);
+			vertices[i].texture = D3DXVECTOR2(mesh->mTextureCoords[0][vertice].x, mesh->mTextureCoords[0][vertice].y);
+			vertices[i].normal = D3DXVECTOR3(mesh->mNormals[vertice].x, mesh->mNormals[vertice].y, mesh->mNormals[vertice].z);
+
+			vertice++;
+
+			indices[i] = i;
+		}
+
+			//int m_previous_num_faces = 0;
+			//mesh_count = 0;
+			//int current_indice = 0;
+			//int mesh_faces = 0;
+
+			//for (int i = 0; i < faceCount; i++)
+			//{
+
+			//	if (modelScene->mMeshes[mesh_count]->mNumFaces + m_previous_num_faces < i && mesh_count < modelScene->mNumMeshes - 1)
+			//	{
+			//		m_previous_num_faces += modelScene->mMeshes[mesh_count]->mNumFaces;
+			//		mesh_faces = 0;
+			//		mesh_count++;
+			//	}
+			//	aiFace* face = &modelScene->mMeshes[mesh_count]->mFaces[mesh_faces];
+			//	if (face->mNumIndices != 3)
+			//	{
+			//		std::cout << "[??] Mesh face with not exactly 3 indices, ignoring this primitive.\n";
+			//		continue;
+			//	}
+
+			//	indices[current_indice] = face->mIndices[0];
+			//	indices[current_indice + 1] = face->mIndices[1];
+			//	indices[current_indice + 2] = face->mIndices[2];
+
+			//	mesh_faces++;
+			//	current_indice += 3;
+			//}
+		}
+		// Set up the description of the static vertex buffer.
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = 0;
+
+		// Give the subresource structure a pointer to the vertex data.
+		vertexData.pSysMem = vertices;
+		vertexData.SysMemPitch = 0;
+		vertexData.SysMemSlicePitch = 0;
+
+		// Now create the vertex buffer.
+		result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
+		if (FAILED(result))
+		{
+			return false;
+		}
+
+		// Set up the description of the static index buffer.
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = 0;
+
+		// Give the subresource structure a pointer to the index data.
+		indexData.pSysMem = indices;
+		indexData.SysMemPitch = 0;
+		indexData.SysMemSlicePitch = 0;
+
+		// Create the index buffer.
+		result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
+		if (FAILED(result))
+		{
+			return false;
+		}
+
+		// Release the arrays now that the vertex and index buffers have been created and loaded.
+		delete[] vertices;
+		vertices = 0;
+
+		delete[] indices;
+		indices = 0;
+
+		return true;
 	}
 
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = vertices;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = indices;
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete[] vertices;
-	vertices = 0;
-
-	delete[] indices;
-	indices = 0;
-
-	return true;
-}
 
 void AssimpTool::InitNodes()
 {
@@ -291,13 +337,13 @@ bool AssimpTool::Initialize(ID3D11Device *device, char *fileName, WCHAR* texture
 
 void AssimpTool::Shutdown()
 {
-		// Release the model texture.
-		ReleaseTexture();
+	// Release the model texture.
+	ReleaseTexture();
 
-		// Shutdown the vertex and index buffers.
-		ShutdownBuffers();
-		return;
-	}
+	// Shutdown the vertex and index buffers.
+	ShutdownBuffers();
+	return;
+}
 
 void AssimpTool::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {

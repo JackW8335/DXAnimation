@@ -79,7 +79,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -30.0f);
 
 
 
@@ -121,8 +121,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	assimp = new AssimpTool();
 
-	assimp->Initialize(m_D3D->GetDevice(), "F:/GitHub/DXAnimationTool/DirectXEngineAT/data/DoomSlayer/DoomSlayer.fbx", L"./data/brick-wall.jpg");
-	
+
+	assimp->Initialize(m_D3D->GetDevice(), "F:/GitHub/DXAnimation/DirectXEngineAT/data/DoomSlayer/Test.obj", L"./data/brick-wall.jpg");
+	//assimp->Initialize(m_D3D->GetDevice(), "F:/GitHub/DXAnimation/DirectXEngineAT/data/cube.obj", L"./data/brick-wall.jpg");
 	return true;
 }
 
@@ -242,7 +243,7 @@ bool GraphicsClass::Render(float rotation)
 	float posX = 0.0f, posY = 0.0f, posZ = 0.0f, rotY;
 
 	// Clear the buffers to begin the scene.
-	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+	m_D3D->BeginScene(0.0f, 0.0f, 1.0f, 1.0f);
 
 
 
