@@ -122,8 +122,8 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	assimp = new AssimpTool();
 
 
-	assimp->Initialize(m_D3D->GetDevice(), "F:/GitHub/DXAnimation/DirectXEngineAT/data/DoomSlayer/Test.obj", L"./data/brick-wall.jpg");
-	//assimp->Initialize(m_D3D->GetDevice(), "F:/GitHub/DXAnimation/DirectXEngineAT/data/cube.obj", L"./data/brick-wall.jpg");
+	assimp->Initialize(m_D3D->GetDevice(), "./data/DoomSlayer/Test.obj", L"./data/brick-wall.jpg");
+	//assimp->Initialize(m_D3D->GetDevice(), "./data/cube.obj", L"./data/brick-wall.jpg");
 	return true;
 }
 
@@ -263,10 +263,12 @@ bool GraphicsClass::Render(float rotation)
 
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
 
-	assimp->Render(m_D3D->GetDeviceContext());
+	
 
 	if (assimp)
 	{
+		assimp->Render(m_D3D->GetDeviceContext());
+
 		result = m_LightShader->Render(m_D3D->GetDeviceContext(), assimp->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 			assimp->GetTexture(), m_Light->GetDirection(), m_Light->GetAmbientColour(), m_Light->GetDiffuseColor());
 	}
