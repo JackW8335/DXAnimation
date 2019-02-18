@@ -15,9 +15,13 @@ bool AssimpTool::loadModel(std::string file)
 	const char * c = file.c_str();
 	//modelScene = importer.ReadFile(file, aiProcess_MakeLeftHanded);
 	//modelScene = importer.ReadFile(file, aiProcess_ConvertToLeftHanded);
-	
 
-	modelScene = aiImportFile(c, aiProcess_MakeLeftHanded);
+	modelScene = importer.ReadFile(file, aiProcess_Triangulate |  aiProcess_PreTransformVertices);
+	//modelScene = aiImportFile(c, aiProcess_MakeLeftHanded);
+
+	//modelScene = importer.ReadFile(file,
+	//	 aiProcess_MakeLeftHanded);
+
 
 	return true;
 }
@@ -30,21 +34,8 @@ bool AssimpTool::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	HRESULT result;
-	int i;
 	aiMesh* mesh;
 
-	//InitNodes();
-	//// Get node information from the root level (all nodes)
-	//for (unsigned int a = 0; a < nodeBuff.size(); a++)
-	//{
-	//	modelNode = nodeBuff.at(a);
-	//}
-
-	//	if (modelNode->mNumMeshes > 0)
-	//		for (unsigned int b = 0; b < modelNode->mNumMeshes; b++) {
-	//			aiMesh* mesh = modelScene->mMeshes[b];
-	//		}
-	//}
 	if (!modelScene)
 	{
 		return false;
@@ -60,13 +51,6 @@ bool AssimpTool::InitializeBuffers(ID3D11Device* device)
 
 		m_indexCount = m_vertexCount;
 
-		//for (unsigned int m = 0; m < modelScene->mNumMeshes; m++)
-		//{
-
-
-		//m_vertexCount = mesh->mNumVertices;
-		//m_indexCount = mesh->mFaces->mNumIndices;
-
 		// Create the vertex array.
 		vertices = new VertexType[m_vertexCount];
 		if (!vertices)
@@ -75,116 +59,85 @@ bool AssimpTool::InitializeBuffers(ID3D11Device* device)
 		}
 
 		// Create the index array.
-		indices = new unsigned long[m_indexCount ];
+		indices = new unsigned long[faceCount*3];
 		if (!indices)
 		{
 			return false;
 		}
 
-		int vertice = 0;
-		int mesh_count = 0;
-		int m_previous_num_vertices = 0;
-
-		mesh = modelScene->mMeshes[0];
-		// Load the vertex array and index array with data.
-		for (int i = 0; i < m_vertexCount; i++)
+		int current_indice = 0;
+		for (int m = 0; m < modelScene->mNumMeshes;m++)
 		{
+			mesh = modelScene->mMeshes[m];
 
-			if (modelScene->mMeshes[mesh_count]->mNumVertices + m_previous_num_vertices < i && mesh_count < modelScene->mNumMeshes - 1)
+			for (int v = 0; v < mesh->mNumVertices; v++)
 			{
-				mesh_count++;
-				m_previous_num_vertices += mesh->mNumVertices;
-				vertice = 0;
-				mesh = modelScene->mMeshes[mesh_count];
+				vertices[v].position = D3DXVECTOR3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+				vertices[v].texture = D3DXVECTOR2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+				vertices[v].normal = D3DXVECTOR3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
 			}
-					
-			vertices[i].position = D3DXVECTOR3(mesh->mVertices[vertice].x, mesh->mVertices[vertice].y, mesh->mVertices[vertice].z);
-			vertices[i].texture = D3DXVECTOR2(mesh->mTextureCoords[0][vertice].x, mesh->mTextureCoords[0][vertice].y);
-			vertices[i].normal = D3DXVECTOR3(mesh->mNormals[vertice].x, mesh->mNormals[vertice].y, mesh->mNormals[vertice].z);
 
-			vertice++;
+			for (int f = 0; f < mesh->mNumFaces; f++)
+			{
+				aiFace* face = &mesh->mFaces[f];
 
-			indices[i] = i;
+				indices[current_indice] = face->mIndices[0];
+				indices[current_indice + 1] = face->mIndices[1];
+				indices[current_indice + 2] = face->mIndices[2];
+
+				current_indice += 3;
+			}
 		}
-
-			//int m_previous_num_faces = 0;
-			//mesh_count = 0;
-			//int current_indice = 0;
-			//int mesh_faces = 0;
-
-			//for (int i = 0; i < faceCount; i++)
-			//{
-
-			//	if (modelScene->mMeshes[mesh_count]->mNumFaces + m_previous_num_faces < i && mesh_count < modelScene->mNumMeshes - 1)
-			//	{
-			//		m_previous_num_faces += modelScene->mMeshes[mesh_count]->mNumFaces;
-			//		mesh_faces = 0;
-			//		mesh_count++;
-			//	}
-			//	aiFace* face = &modelScene->mMeshes[mesh_count]->mFaces[mesh_faces];
-			//	if (face->mNumIndices != 3)
-			//	{
-			//		std::cout << "[??] Mesh face with not exactly 3 indices, ignoring this primitive.\n";
-			//		continue;
-			//	}
-
-			//	indices[current_indice] = face->mIndices[0];
-			//	indices[current_indice + 1] = face->mIndices[1];
-			//	indices[current_indice + 2] = face->mIndices[2];
-
-			//	mesh_faces++;
-			//	current_indice += 3;
-			//}
-		}
-		// Set up the description of the static vertex buffer.
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		vertexBufferDesc.MiscFlags = 0;
-		vertexBufferDesc.StructureByteStride = 0;
-
-		// Give the subresource structure a pointer to the vertex data.
-		vertexData.pSysMem = vertices;
-		vertexData.SysMemPitch = 0;
-		vertexData.SysMemSlicePitch = 0;
-
-		// Now create the vertex buffer.
-		result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
-		if (FAILED(result))
-		{
-			return false;
-		}
-
-		// Set up the description of the static index buffer.
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		indexBufferDesc.MiscFlags = 0;
-		indexBufferDesc.StructureByteStride = 0;
-
-		// Give the subresource structure a pointer to the index data.
-		indexData.pSysMem = indices;
-		indexData.SysMemPitch = 0;
-		indexData.SysMemSlicePitch = 0;
-
-		// Create the index buffer.
-		result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
-		if (FAILED(result))
-		{
-			return false;
-		}
-
-		// Release the arrays now that the vertex and index buffers have been created and loaded.
-		delete[] vertices;
-		vertices = 0;
-
-		delete[] indices;
-		indices = 0;
-
-		return true;
 	}
+	// Set up the description of the static vertex buffer.
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	// Give the subresource structure a pointer to the vertex data.
+	vertexData.pSysMem = vertices;
+	vertexData.SysMemPitch = 0;
+	vertexData.SysMemSlicePitch = 0;
+
+	// Now create the vertex buffer.
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// Set up the description of the static index buffer.
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
+
+	// Give the subresource structure a pointer to the index data.
+	indexData.pSysMem = indices;
+	indexData.SysMemPitch = 0;
+	indexData.SysMemSlicePitch = 0;
+
+	// Create the index buffer.
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// Release the arrays now that the vertex and index buffers have been created and loaded.
+	delete[] vertices;
+	vertices = 0;
+
+	delete[] indices;
+	indices = 0;
+
+	return true;
+}
 
 
 void AssimpTool::InitNodes()
