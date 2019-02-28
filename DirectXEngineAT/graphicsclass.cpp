@@ -121,8 +121,10 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	assimp = new AssimpTool();
 
+	assimp->Initialize(m_D3D->GetDevice(), "./data/DoomSlayer/DoomSlayer.fbx", L"./data/brick-wall.jpg");
 
-	assimp->Initialize(m_D3D->GetDevice(), "./data/DoomSlayer/Test.obj", L"./data/brick-wall.jpg");
+	assimp->SetRotation(0.0f, 0.0f, 90.0f);
+
 	//assimp->Initialize(m_D3D->GetDevice(), "./data/cube.obj", L"./data/brick-wall.jpg");
 	return true;
 }
@@ -167,8 +169,6 @@ void GraphicsClass::Shutdown()
 	}
 
 	assimp->Shutdown();
-	
-
 
 	// Release the camera object.
 	if (m_Camera)
@@ -184,8 +184,6 @@ void GraphicsClass::Shutdown()
 		delete m_D3D;
 		m_D3D = 0;
 	}
-
-
 
 
 	TwTerminate(); // Terminate AntTweakBar
@@ -229,6 +227,8 @@ bool GraphicsClass::Frame(float posX, float posY, float posZ, float rotX, float 
 		building_scale = D3DXVECTOR3(width, height, depth);
 	}
 
+	
+
 	return true;
 }
 
@@ -262,12 +262,14 @@ bool GraphicsClass::Render(float rotation)
 
 
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
-
+	
 	
 
 	if (assimp)
 	{
 		assimp->Render(m_D3D->GetDeviceContext());
+
+		assimp->GetRotationY(rotY);
 
 		result = m_LightShader->Render(m_D3D->GetDeviceContext(), assimp->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 			assimp->GetTexture(), m_Light->GetDirection(), m_Light->GetAmbientColour(), m_Light->GetDiffuseColor());
@@ -278,7 +280,7 @@ bool GraphicsClass::Render(float rotation)
 	for (int i = 0; i < m_Models.size(); i++)
 	{
 
-		// Setup the translation matrix for the cube model.
+		// Setup the translation matrix for the model.
 		m_Models[i]->GetPosition(posX, posY, posZ);
 		m_Models[i]->GetRotationY(rotY);
 

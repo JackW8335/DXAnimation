@@ -3,142 +3,166 @@
 AssimpTool::AssimpTool()
 {
 	m_vertexCount = 0;
+	m_indexCount = 0;
 }
 
 AssimpTool::~AssimpTool(void)
 {
 }
 
-bool AssimpTool::loadModel(std::string file)
+bool AssimpTool::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devcon, std::string filename)
 {
 
-	const char * c = file.c_str();
-	//modelScene = importer.ReadFile(file, aiProcess_MakeLeftHanded);
-	//modelScene = importer.ReadFile(file, aiProcess_ConvertToLeftHanded);
+	 modelScene = importer.ReadFile(filename,
+		aiProcess_Triangulate |
+		aiProcess_ConvertToLeftHanded);
 
-	modelScene = importer.ReadFile(file, aiProcess_Triangulate |  aiProcess_PreTransformVertices);
-	//modelScene = aiImportFile(c, aiProcess_MakeLeftHanded);
+	if (modelScene == NULL)
+		return false;
 
-	//modelScene = importer.ReadFile(file,
-	//	 aiProcess_MakeLeftHanded);
+	this->directory = filename.substr(0, filename.find_last_of('/'));
 
+	this->dev = dev;
+	this->hwnd = hwnd;
+
+	processNode(modelScene->mRootNode, modelScene);
 
 	return true;
 }
 
 
-bool AssimpTool::InitializeBuffers(ID3D11Device* device)
+
+//bool AssimpTool::InitializeBuffers(ID3D11Device* device)
+//{
+//	VertexType* vertices;
+//	unsigned long* indices;
+//	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
+//	D3D11_SUBRESOURCE_DATA vertexData, indexData;
+//	HRESULT result;
+//	aiMesh* mesh;
+//
+//	InitNodes();
+//
+//	if (!modelScene)
+//	{
+//		return false;
+//	}
+//	if (modelScene->mNumMeshes > 0)
+//	{
+//		int faceCount = 0;
+//		for (unsigned int m = 0; m < modelScene->mNumMeshes; m++)
+//		{
+//			m_vertexCount += modelScene->mMeshes[m]->mNumVertices;
+//			faceCount += modelScene->mMeshes[m]->mNumFaces;
+//		}
+//	
+//
+//		m_indexCount = m_vertexCount;
+//
+//		// Create the vertex array.
+//		vertices = new VertexType[m_vertexCount];
+//		if (!vertices)
+//		{
+//			return false;
+//		}
+//
+//		 //Create the index array.
+//		indices = new unsigned long[faceCount * 3];
+//		if (!indices)
+//		{
+//			return false;
+//		}
+//
+//		int current_indice = 0;
+//
+//		for (unsigned int a = 0; a < nodeBuff.size(); a++)
+//		{
+//			/*modelNode = nodeBuff.at(a);
+//
+//			if (modelNode->mNumMeshes > 0)
+//				for (unsigned int b = 0; b < modelNode->mNumMeshes; b++)
+//				{
+//					mesh = modelScene->mMeshes[modelNode->mMeshes[b]];
+//
+//					for (int v = 0; v < mesh->mNumVertices; v++)
+//					{
+//						vertices[v].position = D3DXVECTOR3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+//						vertices[v].texture = D3DXVECTOR2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+//						vertices[v].normal = D3DXVECTOR3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
+//					}
+//
+//					for (int f = 0; f < mesh->mNumFaces; f++)
+//					{
+//						aiFace* face = &mesh->mFaces[f];
+//
+//						indices[current_indice] = face->mIndices[0];
+//						indices[current_indice + 1] = face->mIndices[1];
+//						indices[current_indice + 2] = face->mIndices[2];
+//
+//						current_indice += 3;
+//					}
+//				}*/
+//		}
+//	}
+//	// Set up the description of the static vertex buffer.
+//	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+//	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+//	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+//	vertexBufferDesc.CPUAccessFlags = 0;
+//	vertexBufferDesc.MiscFlags = 0;
+//	vertexBufferDesc.StructureByteStride = 0;
+//
+//	// Give the subresource structure a pointer to the vertex data.
+//	vertexData.pSysMem = vertices;
+//	vertexData.SysMemPitch = 0;
+//	vertexData.SysMemSlicePitch = 0;
+//
+//	// Now create the vertex buffer.
+//	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
+//	if (FAILED(result))
+//	{
+//		return false;
+//	}
+//
+//	// Set up the description of the static index buffer.
+//	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+//	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+//	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+//	indexBufferDesc.CPUAccessFlags = 0;
+//	indexBufferDesc.MiscFlags = 0;
+//	indexBufferDesc.StructureByteStride = 0;
+//
+//	// Give the subresource structure a pointer to the index data.
+//	indexData.pSysMem = indices;
+//	indexData.SysMemPitch = 0;
+//	indexData.SysMemSlicePitch = 0;
+//
+//	// Create the index buffer.
+//	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
+//	if (FAILED(result))
+//	{
+//		return false;
+//	}
+//
+//	// Release the arrays now that the vertex and index buffers have been created and loaded.
+//	delete[] vertices;
+//	vertices = 0;
+//
+//	delete[] indices;
+//	indices = 0;
+//
+//	return true;
+//}
+
+void AssimpTool::Close()
 {
-	VertexType* vertices;
-	unsigned long* indices;
-	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData, indexData;
-	HRESULT result;
-	aiMesh* mesh;
-
-	if (!modelScene)
+	for (int i = 0; i < meshes.size(); i++)
 	{
-		return false;
-	}
-	if (modelScene->mNumMeshes > 0)
-	{
-		int faceCount = 0;
-		for (unsigned int m = 0; m < modelScene->mNumMeshes; m++)
-		{
-			m_vertexCount += modelScene->mMeshes[m]->mNumVertices;
-			faceCount += modelScene->mMeshes[m]->mNumFaces;
-		}
-
-		m_indexCount = m_vertexCount;
-
-		// Create the vertex array.
-		vertices = new VertexType[m_vertexCount];
-		if (!vertices)
-		{
-			return false;
-		}
-
-		// Create the index array.
-		indices = new unsigned long[faceCount*3];
-		if (!indices)
-		{
-			return false;
-		}
-
-		int current_indice = 0;
-		for (int m = 0; m < modelScene->mNumMeshes;m++)
-		{
-			mesh = modelScene->mMeshes[m];
-
-			for (int v = 0; v < mesh->mNumVertices; v++)
-			{
-				vertices[v].position = D3DXVECTOR3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
-				vertices[v].texture = D3DXVECTOR2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
-				vertices[v].normal = D3DXVECTOR3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
-			}
-
-			for (int f = 0; f < mesh->mNumFaces; f++)
-			{
-				aiFace* face = &mesh->mFaces[f];
-
-				indices[current_indice] = face->mIndices[0];
-				indices[current_indice + 1] = face->mIndices[1];
-				indices[current_indice + 2] = face->mIndices[2];
-
-				current_indice += 3;
-			}
-		}
-	}
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = vertices;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
-	if (FAILED(result))
-	{
-		return false;
+		meshes[i].Close();
 	}
 
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = indices;
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete[] vertices;
-	vertices = 0;
-
-	delete[] indices;
-	indices = 0;
-
-	return true;
+	dev->Release();
 }
-
 
 void AssimpTool::InitNodes()
 {
@@ -162,50 +186,7 @@ void AssimpTool::InitNodes()
 		}
 	}
 }
-//bool AssimpTool::assimpGetMeshData(const aiMesh *mesh)
-//{
-//	aiFace *face;
-//
-//	for (unsigned int vertices = 0; vertices < mesh->mNumVertices; vertices++)
-//	{
-//		vertexBuff.push_back(mesh->mVertices[vertices].x);
-//		vertexBuff.push_back(mesh->mVertices[vertices].y);
-//		vertexBuff.push_back(mesh->mVertices[vertices].z);
-//
-//
-//		vertexBuff.push_back(mesh->mNormals[vertices].x);
-//		vertexBuff.push_back(mesh->mNormals[vertices].y);
-//		vertexBuff.push_back(mesh->mNormals[vertices].z);
-//
-//
-//
-//
-//		if (mesh->HasTextureCoords(0)) {
-//			vertexBuff.push_back(mesh->mTextureCoords[0][vertices].x);
-//			vertexBuff.push_back(mesh->mTextureCoords[0][vertices].y);
-//		}
-//		else
-//		{
-//			vertexBuff.push_back(0);
-//			vertexBuff.push_back(0);
-//		}
-//		/*
-//		vertexBuff.push_back(mesh->mTangents[v].x);
-//		vertexBuff.push_back(mesh->mTangents[v].y);
-//		vertexBuff.push_back(mesh->mTangents[v].z);*/
-//
-//	}
-//
-//	for (unsigned int faces = 0; faces < mesh->mNumFaces; faces++)
-//	{
-//		face = &mesh->mFaces[faces];
-//		indexBuff.push_back(face->mIndices[0]);
-//		indexBuff.push_back(face->mIndices[1]);
-//		indexBuff.push_back(face->mIndices[2]);
-//	}
-//
-//	return true;
-//}
+
 void AssimpTool::ShutdownBuffers()
 {
 	// Release the index buffer.
@@ -224,66 +205,78 @@ void AssimpTool::ShutdownBuffers()
 
 	return;
 }
-bool AssimpTool::processData()
+
+void AssimpTool::Draw(ID3D11DeviceContext * devcon)
 {
-	bool repeat = true;
-
-	nodeBuff.push_back(modelScene->mRootNode);
-
-
-	/* if (modelScene->mNumMeshes > 0)
+	for (int i = 0; i < meshes.size(); i++)
 	{
-	for (unsigned int m=0;m<modelScene->mNumMeshes;m++)
-	this->assimpGetMeshData(modelScene->mMeshes[m]);
-	}*/
-
-	// I raise all nodes tree to the root level 
-	while (repeat)
-	{
-		for (unsigned int a = 0; a < nodeBuff.size(); a++)
-		{
-			modelNode = nodeBuff.at(a);
-			if (modelNode->mNumChildren > 0)
-				for (unsigned int c = 0; c < modelNode->mNumChildren; c++)
-				{
-					nodeBuff.push_back(modelNode->mChildren[c]);
-
-				}
-
-			else repeat = false;
-		}
+		meshes[i].Draw(devcon);
 	}
-
-	// Get node information from the root level (all nodes)
-	for (unsigned int a = 0; a < nodeBuff.size(); a++)
-	{
-		modelNode = nodeBuff.at(a);
-
-		if (modelNode->mNumMeshes > 0)
-			for (unsigned int b = 0; b < modelNode->mNumMeshes; b++) {
-				//assimpGetMeshData(modelScene->mMeshes[b]);
-			}
-	}
-	return true;
 }
 
-//std::vector<float> *AssimpTool::getVertexData()
-//{
-//	return &vertexBuff;
-//}
-//
-//std::vector<uint16_t> *AssimpTool::getIndexData()
-//{
-//	return &indexBuff;
-//}
+void AssimpTool::processNode(aiNode * node, const aiScene * scene)
+{
+	for (UINT i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		meshes.push_back(this->processMesh(mesh, scene));
+		m_indexCount += mesh->mNumVertices;
+	}
+
+	for (UINT i = 0; i < node->mNumChildren; i++)
+	{
+		this->processNode(node->mChildren[i], scene);
+	}
+
+
+}
+
+Mesh AssimpTool::processMesh(aiMesh * mesh, const aiScene * scene)
+{
+	//// Data to fill
+	vector<VERTEX> vertices;
+	vector<UINT> indices;
+
+
+	// Walk through each of the mesh's vertices
+	for (UINT i = 0; i < mesh->mNumVertices; i++)
+	{
+		VERTEX vertex;
+
+		vertex.X = mesh->mVertices[i].x;
+		vertex.Y = mesh->mVertices[i].y;
+		vertex.Z = mesh->mVertices[i].z;
+
+		if (mesh->mTextureCoords[0])
+		{
+			vertex.texcoord.x = (float)mesh->mTextureCoords[0][i].x;
+			vertex.texcoord.y = (float)mesh->mTextureCoords[0][i].y;
+		}
+
+		vertices.push_back(vertex);	
+	}
+
+	for (UINT i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+
+		for (UINT j = 0; j < face.mNumIndices; j++)
+			indices.push_back(face.mIndices[j]);
+	}
+
+
+	return Mesh(dev, vertices, indices);
+}
+
 
 bool AssimpTool::Initialize(ID3D11Device *device, char *fileName, WCHAR* textureFile)
 {
-	loadModel(fileName);
 
-	InitializeBuffers(device);
+	Load(hwnd,device,devcon,fileName);
 
-	LoadTexture(device, textureFile);
+	//InitializeBuffers(dev);
+
+	LoadTexture(dev, textureFile);
 
 	return true;
 }
@@ -294,7 +287,8 @@ void AssimpTool::Shutdown()
 	ReleaseTexture();
 
 	// Shutdown the vertex and index buffers.
-	ShutdownBuffers();
+	Close();
+	//ShutdownBuffers();
 	return;
 }
 
@@ -322,7 +316,8 @@ void AssimpTool::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 void AssimpTool::Render(ID3D11DeviceContext* deviceContext)
 {
-	RenderBuffers(deviceContext);
+	//RenderBuffers(deviceContext);
+	Draw(deviceContext);
 }
 
 ID3D11ShaderResourceView* AssimpTool::GetTexture()
@@ -370,5 +365,17 @@ void AssimpTool::ReleaseTexture()
 	return;
 }
 
+void AssimpTool::SetRotation(float x, float y, float z)
+{
 
+	m_rotationY = y;
+
+	return;
+}
+
+void AssimpTool::GetRotationY(float& y)
+{
+	y = m_rotationY;
+	return;
+}
 
