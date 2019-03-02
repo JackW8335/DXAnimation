@@ -13,8 +13,8 @@ AssimpTool::~AssimpTool(void)
 bool AssimpTool::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devcon, std::string filename)
 {
 
-	 modelScene = importer.ReadFile(filename,
-		aiProcess_Triangulate |
+	modelScene = importer.ReadFile(filename,
+		aiProcess_Triangulate | aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_JoinIdenticalVertices |
 		aiProcess_ConvertToLeftHanded);
 
 	if (modelScene == NULL)
@@ -24,6 +24,9 @@ bool AssimpTool::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devco
 
 	this->dev = dev;
 	this->hwnd = hwnd;
+
+	m_GlobalInverseTransform = modelScene->mRootNode->mTransformation;
+	m_GlobalInverseTransform.Inverse();
 
 	processNode(modelScene->mRootNode, modelScene);
 
@@ -221,6 +224,7 @@ void AssimpTool::processNode(aiNode * node, const aiScene * scene)
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes.push_back(this->processMesh(mesh, scene));
 		m_indexCount += mesh->mNumVertices;
+		mesh->mNumBones;
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
@@ -253,7 +257,7 @@ Mesh AssimpTool::processMesh(aiMesh * mesh, const aiScene * scene)
 			vertex.texcoord.y = (float)mesh->mTextureCoords[0][i].y;
 		}
 
-		vertices.push_back(vertex);	
+		vertices.push_back(vertex);
 	}
 
 	for (UINT i = 0; i < mesh->mNumFaces; i++)
@@ -272,7 +276,7 @@ Mesh AssimpTool::processMesh(aiMesh * mesh, const aiScene * scene)
 bool AssimpTool::Initialize(ID3D11Device *device, char *fileName, WCHAR* textureFile)
 {
 
-	Load(hwnd,device,devcon,fileName);
+	Load(hwnd, device, devcon, fileName);
 
 	//InitializeBuffers(dev);
 
@@ -367,15 +371,17 @@ void AssimpTool::ReleaseTexture()
 
 void AssimpTool::SetRotation(float x, float y, float z)
 {
-
+	m_rotationX = x;
 	m_rotationY = y;
-
+	m_rotationZ = z;
 	return;
 }
 
-void AssimpTool::GetRotationY(float& y)
+void AssimpTool::GetRotation(float &x, float& y, float&z)
 {
+	x = m_rotationX;
 	y = m_rotationY;
+	y = m_rotationZ;
 	return;
 }
 

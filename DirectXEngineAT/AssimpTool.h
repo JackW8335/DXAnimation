@@ -12,6 +12,12 @@
 #include "modelclass.h"
 #include "Mesh.h"
 
+struct VertexBoneData
+{
+	UINT IDs[AI_SBBC_DEFAULT_MAX_BONES];
+	float Weights[AI_SBBC_DEFAULT_MAX_BONES];
+};
+
 class AssimpTool
 {
 public:
@@ -36,7 +42,7 @@ public:
 
 	void SetRotation(float x, float y, float z);
 
-	void GetRotationY(float & y);
+	void GetRotation(float & x, float & y, float & z);
 
 private:
 	bool InitializeBuffers(ID3D11Device * device);
@@ -46,7 +52,7 @@ private:
 	TextureClass* m_Texture;
 
 	void ShutdownBuffers();
-	
+
 private:
 	Assimp::Importer            importer;
 	const aiScene               *modelScene;
@@ -56,6 +62,8 @@ private:
 
 	std::vector<const aiNode*>  nodeBuff;
 	unsigned int                numNodeBuff;
+
+	aiMatrix4x4 m_GlobalInverseTransform;
 
 	struct VertexType
 	{
@@ -78,5 +86,5 @@ private:
 	HWND hwnd;
 
 	float m_positionX, m_positionY, m_positionZ;
-	float m_rotationY;
+	float m_rotationX, m_rotationY, m_rotationZ;
 };

@@ -33,7 +33,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	building_scale = D3DXVECTOR3(width, height, depth);
 
-	
+
 
 	int   g_Angle = 0;
 	float g_Scale = 1;
@@ -61,7 +61,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
 
 
-	
+
 
 	//TwAddVarRW(bar, "TestFloat", TW_TYPE_FLOAT, &test, " ");
 
@@ -123,7 +123,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	assimp->Initialize(m_D3D->GetDevice(), "./data/DoomSlayer/DoomSlayer.fbx", L"./data/brick-wall.jpg");
 
-	assimp->SetRotation(0.0f, 0.0f, 90.0f);
+	assimp->SetRotation(1.5f, 0.0f, 0.0f);
 
 	//assimp->Initialize(m_D3D->GetDevice(), "./data/cube.obj", L"./data/brick-wall.jpg");
 	return true;
@@ -154,7 +154,7 @@ void GraphicsClass::Shutdown()
 		if (!m_Models.empty())
 			//exporter->exportModel(m_Models);
 
-		delete exporter;
+			delete exporter;
 		exporter = 0;
 	}
 
@@ -168,7 +168,13 @@ void GraphicsClass::Shutdown()
 		}
 	}
 
-	assimp->Shutdown();
+	if (assimp)
+	{
+		assimp->Shutdown();
+		delete assimp;
+		assimp = 0;
+	}
+
 
 	// Release the camera object.
 	if (m_Camera)
@@ -203,7 +209,7 @@ bool GraphicsClass::Frame(float posX, float posY, float posZ, float rotX, float 
 	m_Camera->SetPosition(posX, posY, posZ);
 	m_Camera->SetRotation(rotX, rotY, rotZ);
 
-	
+
 	rotation += 0.01f;
 	// Render the graphics scene.
 	result = Render(rotation);
@@ -227,7 +233,7 @@ bool GraphicsClass::Frame(float posX, float posY, float posZ, float rotX, float 
 		building_scale = D3DXVECTOR3(width, height, depth);
 	}
 
-	
+
 
 	return true;
 }
@@ -237,10 +243,10 @@ bool GraphicsClass::Frame(float posX, float posY, float posZ, float rotX, float 
 bool GraphicsClass::Render(float rotation)
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, rotationMatrix, translationMatrix, testMatrix;
-	
-	
+
+
 	bool result;
-	float posX = 0.0f, posY = 0.0f, posZ = 0.0f, rotY;
+	float posX = 0.0f, posY = 0.0f, posZ = 0.0f, rotX, rotY, rotZ;
 
 	// Clear the buffers to begin the scene.
 	m_D3D->BeginScene(0.0f, 0.0f, 1.0f, 1.0f);
@@ -262,20 +268,28 @@ bool GraphicsClass::Render(float rotation)
 
 
 	D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
-	
-	
+
+
 
 	if (assimp)
 	{
+
+
 		assimp->Render(m_D3D->GetDeviceContext());
 
-		assimp->GetRotationY(rotY);
+		assimp->GetRotation(rotX, rotY, rotZ);
+
+		D3DXMatrixRotationX(&rotationMatrix, rotX);
+
+		D3DXMatrixTranslation(&worldMatrix, posX, posY, posZ);
+
+		worldMatrix *= worldMatrix * rotationMatrix;
 
 		result = m_LightShader->Render(m_D3D->GetDeviceContext(), assimp->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 			assimp->GetTexture(), m_Light->GetDirection(), m_Light->GetAmbientColour(), m_Light->GetDiffuseColor());
 	}
 
-	
+
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	for (int i = 0; i < m_Models.size(); i++)
 	{
@@ -315,7 +329,7 @@ bool GraphicsClass::Render(float rotation)
 
 		// Reset the world matrix.
 		m_D3D->GetWorldMatrix(worldMatrix);
-		
+
 	}
 
 

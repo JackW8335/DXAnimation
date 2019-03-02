@@ -12,6 +12,8 @@ struct VERTEX {
 	XMFLOAT2 texcoord;
 };
 
+
+
 class Mesh {
 public:
 	vector<VERTEX> vertices;
@@ -39,7 +41,7 @@ public:
 
 		//devcon->PSSetShaderResources(0, 1, &textures[0].texture);
 		devcon->DrawIndexed(indices.size(), 0, 0);
-
+		//devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		//// Set the vertex buffer to active in the input assembler so it can be rendered.
 		//devcon->IASetVertexBuffers(0, 1, &VertexBuffer, &stride, &offset);
@@ -69,7 +71,7 @@ private:
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 
-		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		vertexBufferDesc.ByteWidth = sizeof(VERTEX) * vertices.size();
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = 0;
@@ -83,7 +85,7 @@ private:
 			return false;
 
 		D3D11_BUFFER_DESC indexBufferDesc;
-		indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		indexBufferDesc.ByteWidth = sizeof(UINT) * indices.size();
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
