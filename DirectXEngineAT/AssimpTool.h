@@ -11,6 +11,9 @@
 #include <vector>
 #include "modelclass.h"
 #include "Mesh.h"
+#include <map>
+#include <algorithm>
+#include "Bone.h"
 
 struct VertexBoneData
 {
@@ -73,6 +76,7 @@ private:
 	};
 
 	void processNode(aiNode* node, const aiScene* scene);
+	void processBones(aiMesh * mesh);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	int m_vertexCount, m_indexCount;
@@ -82,6 +86,7 @@ private:
 	ID3D11Device *dev;
 	ID3D11DeviceContext *devcon;
 	std::vector<Mesh> meshes;
+	std::vector<BONE> bones;
 	string directory;
 	HWND hwnd;
 

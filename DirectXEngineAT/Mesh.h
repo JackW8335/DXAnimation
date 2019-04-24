@@ -12,7 +12,11 @@ struct VERTEX {
 	XMFLOAT2 texcoord;
 };
 
-
+struct BONE {
+	string name;
+	UINT boneID;
+	FLOAT weight;
+};
 
 class Mesh {
 public:

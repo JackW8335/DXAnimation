@@ -1,0 +1,90 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v3.3.0)
+
+newmtl 7_Material144_1_0_0
+Kd 0.5485648512840271 0.7138994932174683 0.7180872559547424
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+d 0
+Ns 9.607843399047852
+illum 2
+map_Kd visor_d.png
+
+newmtl 4_Material94_0.4_0_0
+Kd 0.5274637937545776 0.4243369698524475 0.7406565546989441
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_chest_d.png
+bump doom_chest_n.png
+map_bump doom_chest_n.png
+
+newmtl 4_Material93_0.4_0_0
+Kd 0.4784958362579346 0.4003953635692596 0.6368797421455383
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_legs_d.png
+bump doom_legs_n.png
+map_bump doom_legs_n.png
+
+newmtl 4_Material132_0.25_0_0
+Kd 0.490774542093277 0.5337121486663818 0.7185562252998352
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd eye_d.png
+bump eye_n.png
+map_bump eye_n.png
+
+newmtl 4_Material120_0.25_0_0
+Kd 0.7993053793907166 0.4616172909736633 0.6063730716705322
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_face_d.png
+bump doom_face_n.png
+map_bump doom_face_n.png
+
+newmtl 4_Material119_0.4_0_0
+Kd 0.6869210004806519 0.6256985664367676 0.7050109505653381
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_helm_d.png
+bump doom_helm_n.png
+map_bump doom_helm_n.png
+
+newmtl 4_Material118_0.4_0_0
+Kd 0.5493675470352173 0.5676037073135376 0.402169942855835
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_arms_d.png
+bump doom_arms_n.png
+map_bump doom_arms_n.png
+
+newmtl 4_Material106_0.4_0_0
+Kd 0.5223659873008728 0.4934104979038239 0.5338367819786072
+Ka 0 0 0
+Ks 0 0 0
+Ke 0 0 0
+Ns 9.607843399047852
+illum 2
+map_Kd doom_shoulder_d.png
+bump doom_shoulder_n.png
+map_bump doom_shoulder_n.png
+

@@ -219,20 +219,88 @@ void AssimpTool::Draw(ID3D11DeviceContext * devcon)
 
 void AssimpTool::processNode(aiNode * node, const aiScene * scene)
 {
+
+
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes.push_back(this->processMesh(mesh, scene));
 		m_indexCount += mesh->mNumVertices;
-		mesh->mNumBones;
+
+		processBones(mesh);
+
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
 	{
 		this->processNode(node->mChildren[i], scene);
 	}
+}
 
+void AssimpTool::processBones(aiMesh * mesh)
+{
 
+	std::vector<int> boneArray;
+
+	boneArray.reserve(20);
+	boneArray.assign(20, 0);
+	std::vector<int> boneIndex1;
+	std::vector<int> boneIndex2;
+
+	
+	for (UINT i = 0; i < mesh->mNumBones; i++)
+	{
+		aiBone* bone = mesh->mBones[i];
+
+		aiString name = bone->mName;
+		for (int j = 0; j < bone->mNumWeights; j++)
+		{
+			aiVertexWeight weight = bone->mWeights[j];
+
+			int vertexIndex = weight.mWeight;
+			int fIndex = vertexIndex;
+			
+			if (boneIndex1.size() < vertexIndex)
+			{
+				boneArray[fIndex] = j;
+				boneArray[fIndex + 2] = weight.mWeight;
+			}
+			else if (boneIndex1[vertexIndex] == 0)
+			{
+				boneArray[fIndex + 1] = j;
+				boneArray[fIndex + 3] = weight.mWeight;
+			}
+			else if (boneIndex2.size() < vertexIndex)
+			{
+				boneArray[fIndex + 4] = j;
+				boneArray[fIndex + 6] = weight.mWeight;
+			}
+			else if (boneIndex2[vertexIndex] == 0)
+			{
+				boneArray[fIndex + 5] = j;
+				boneArray[fIndex + 7] = weight.mWeight;
+			}
+			BONE bone;
+			bone.name = name.data;
+			bone.weight = weight.mWeight;
+			bone.boneID = fIndex;
+			bones.push_back(bone);
+
+			aiMatrix4x4 inverseRootTransform = modelScene->mRootNode->mTransformation;
+			
+			
+		}
+
+		Bone* bones = new Bone[boneArray.size];
+
+		for (int b = 0; b < mesh->mNumBones; b++)
+		{
+			aiBone *bone = mesh->mBones[b];
+
+		}
+	}
+
+	
 }
 
 Mesh AssimpTool::processMesh(aiMesh * mesh, const aiScene * scene)
