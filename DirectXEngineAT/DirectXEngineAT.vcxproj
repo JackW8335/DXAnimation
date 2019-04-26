@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssimpTool.h" />
+    <ClInclude Include="Bone.h" />
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="Exporter.h" />
@@ -104,6 +105,7 @@
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />
     <ClInclude Include="lightshaderclass.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="modelclass.h" />
     <ClInclude Include="Position.h" />
     <ClInclude Include="systemclass.h" />
