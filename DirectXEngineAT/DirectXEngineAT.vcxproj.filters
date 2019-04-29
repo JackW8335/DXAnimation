@@ -92,6 +92,9 @@
     <None Include="light.ps">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="bone.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

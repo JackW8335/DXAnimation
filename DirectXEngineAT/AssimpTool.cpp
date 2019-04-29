@@ -227,7 +227,7 @@ void AssimpTool::processNode(aiNode * node, const aiScene * scene)
 		meshes.push_back(this->processMesh(mesh, scene));
 		m_indexCount += mesh->mNumVertices;
 
-		processBones(mesh);
+		//processBones(mesh);
 
 	}
 
@@ -248,7 +248,7 @@ void AssimpTool::processBones(aiMesh * mesh)
 	std::vector<int> boneIndex2;
 
 	
-	for (UINT i = 0; i < mesh->mNumBones; i++)
+	for (UINT i = 0; i < mesh->mNumBones - 1; i++)
 	{
 		aiBone* bone = mesh->mBones[i];
 
@@ -291,7 +291,7 @@ void AssimpTool::processBones(aiMesh * mesh)
 			
 		}
 
-		Bone* bones = new Bone[boneArray.size];
+		//Bone* bones = new Bone[boneArray.size];
 
 		for (int b = 0; b < mesh->mNumBones; b++)
 		{

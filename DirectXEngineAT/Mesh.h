@@ -13,6 +13,8 @@ struct VERTEX {
 };
 
 struct BONE {
+	FLOAT X, Y, Z;
+	XMFLOAT2 texcoord;
 	string name;
 	UINT boneID;
 	FLOAT weight;

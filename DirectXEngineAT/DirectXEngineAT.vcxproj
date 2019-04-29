@@ -43,8 +43,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;F:\GitHub\DX11Engine-AT\AntTweakBar\include;F:\Assimp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;F:\GitHub\DX11Engine-AT\AntTweakBar\lib;F:\Assimp\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>F:\GitHub\DXAnimation\AntTweakBar\include;F:\GitHub\DXAnimation\Assimp\include;F:\GitHub\DXAnimation\DirectX2010\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>F:\GitHub\DXAnimation\DirectX2010\Lib;F:\GitHub\DXAnimation\AntTweakBar\lib;F:\Github\DXAnimation\Assimp\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -112,6 +112,7 @@
     <ClInclude Include="textureclass.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bone.vs" />
     <None Include="light.ps" />
     <None Include="light.vs" />
   </ItemGroup>

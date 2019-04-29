@@ -29,11 +29,13 @@ bool LightShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 
 
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"../DirectXEngineAT/light.vs", L"../DirectXEngineAT/light.ps");
+	result = InitialiseShader(device, hwnd, L"../DirectXEngineAT/light.vs", L"../DirectXEngineAT/light.ps");
 	if(!result)
 	{
 		return false;
 	}
+
+
 
 	return true;
 }
@@ -69,7 +71,7 @@ bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount
 }
 
 
-bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
+bool LightShaderClass::InitialiseShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage;
